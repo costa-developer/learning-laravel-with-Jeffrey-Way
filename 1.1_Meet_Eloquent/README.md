@@ -1,106 +1,133 @@
----
-
-# Day 7 – Refactoring with Models and MVC Concepts in Laravel
-
-## Overview
-
-In Day 7 of the Laravel journey, we focused on **eliminating duplicated job data**, introducing **MVC architecture**, and creating a **dedicated `Job` model** to manage and retrieve data cleanly. This day laid the foundation for structuring our application in a scalable and maintainable way using Laravel’s conventions.
 
 ---
 
-## What I Learned
+# 📘 Meet Eloquent – Laravel Learning Notes
+**Episode:** 09
+**Instructor:** Jeffrey Way
+**Run Time:** 18m 16s
+**Topic:** Laravel Eloquent ORM
 
-### ✅ 1. Eliminated Data Duplication in Routes
+## 📌 Overview
 
-Previously, job data arrays were repeated across multiple routes. We refactored this by:
+This episode introduced **Eloquent**, Laravel's built-in **Object Relational Mapper (ORM)**. Eloquent simplifies database interaction by allowing you to work with your data using PHP objects, rather than raw SQL queries or arrays.
 
-* Moving the array to a shared scope within the route file initially.
-* Later encapsulating the job data in a **`Job` model** with a static `all()` method.
+---
+
+## 🧠 Key Concepts Learned
+
+### 1. **What is Eloquent?**
+
+* Eloquent is Laravel’s ORM.
+* It maps database **table rows** to **PHP objects**, enabling object-oriented data access.
+
+---
+
+### 2. **Creating an Eloquent Model**
+
+To convert a regular class into an Eloquent model:
 
 ```php
-class Job
+use Illuminate\Database\Eloquent\Model;
+
+class Job extends Model
 {
-    public static function all(): array
-    {
-        return [
-            ['id' => 1, 'title' => 'Director', 'salary' => 50000],
-            ['id' => 2, 'title' => 'Programmer', 'salary' => 10000],
-            ['id' => 3, 'title' => 'Teacher', 'salary' => 40000],
-        ];
-    }
+    // Model logic
 }
 ```
 
----
-
-### ✅ 2. Followed MVC Architecture
-
-**MVC (Model-View-Controller)** separates an application into:
-
-* **Model**: Data & business logic (`Job` class)
-* **View**: Blade templates that render HTML
-* **Controller**: Logic to handle routes and requests (currently defined inline in `web.php`)
-
-This structure improves scalability and organization.
-
----
-
-### ✅ 3. Created and Organized the Model
-
-* Created a `Job` model inside the `app/Models` directory.
-* Applied **PSR-4 autoloading** and proper namespacing:
-
-  ```php
-  namespace App\Models;
-  ```
-
----
-
-### ✅ 4. Added Static `find()` Method to the Model
-
-Used Laravel’s `Arr::first()` helper to add a reusable method to fetch a job by ID:
+If your table name doesn’t match Laravel's default naming (plural snake\_case), specify it:
 
 ```php
-use Illuminate\Support\Arr;
-
-public static function find(int $id): ?array
-{
-    return Arr::first(self::all(), fn ($job) => $job['id'] === $id);
-}
+protected $table = 'job_listings';
 ```
 
 ---
 
-### ✅ 5. Gracefully Handled Missing Data
+### 3. **Working with Routes and Eloquent**
 
-If a job wasn’t found by ID, we used Laravel’s `abort(404)` helper:
+In your routes/web.php:
 
 ```php
-$job = Job::find($id);
+use App\Models\Job;
 
-if (! $job) {
-    abort(404);
-}
+Route::get('/', function () {
+    $jobs = Job::all();
+    dd($jobs); // Dump to inspect
+});
 ```
 
-This returns a proper 404 response and a friendly error page.
+Access model attributes:
+
+```php
+$jobs[0]->title;
+```
 
 ---
 
-## Summary of Key Concepts
+### 4. **Retrieving Records**
 
-* 🧠 Centralized reusable data via a `Job` model.
-* 📚 Learned and applied MVC architecture principles.
-* 🗂️ Organized code with autoloaded models and proper namespaces.
-* 🔍 Created helper methods like `find()` for model-level logic.
-* 🛑 Gracefully handled invalid data with `abort(404)`.
+```php
+$jobs = Job::all();           // Get all records
+$job = Job::find(1);          // Find record by ID
+```
+
+---
+
+### 5. **Creating Records with Mass Assignment**
+
+```php
+Job::create([
+    'title' => 'Acme Director',
+    'salary' => '1000000',
+]);
+```
+
+**Important:** Define fillable attributes to protect against mass assignment:
+
+```php
+protected $fillable = ['title', 'salary'];
+```
 
 ---
 
-## Next Steps
+### 6. **Using Laravel Tinker**
 
-* Apply the same principles to other types of data (e.g., users, posts).
-* Learn about Eloquent ORM for interacting with a real database.
-* Explore Controllers to handle logic outside the routes file.
+Tinker is a REPL for running code interactively:
+
+```bash
+php artisan tinker
+```
+
+You can run Eloquent queries, create/update records, and experiment in real time.
 
 ---
+
+### 7. **Generating Models and Migrations**
+
+```bash
+php artisan make:model Post -m
+```
+
+This creates:
+
+* A `Post` model
+* A migration file for defining the database schema
+
+---
+
+## 🧪 Homework / Practice
+
+* Generate models and migrations.
+* Run migrations and interact with records using Tinker.
+* Get hands-on with creating, updating, and retrieving records via Eloquent.
+
+---
+
+## ✅ Summary
+
+Eloquent allows you to write clean, expressive PHP code to interact with databases. It's an essential tool in Laravel for managing data in a modern, object-oriented way.
+
+---
+
+*Ready for Day 10!* 🚀
+
